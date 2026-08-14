@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,77 +16,90 @@ import {
   Stethoscope,
   Pencil,
   BadgeCheck,
+  Loader2,
+  AlertTriangle,
 } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { fetchDoctorDetails } from "../../../../store/doctorsSlice";
 
-// ---- Mock data (swap for real fetch / API call) ----------------------------
+// NOTE: adjust these two import paths if your folder depth differs
+// (this assumes app/admin/doctors/[id]/page.tsx, i.e. 4 levels up to /store).
 
-const doctor = {
-  id: "doc_1042",
-  name: "Dr. Sarah Whitfield",
-  specialty: "Cardiology",
-  email: "sarah.whitfield@doctortracker.com",
-  phone: "+1 (555) 214-7788",
-  location: "Building C, Floor 4 — Room 412",
-  experience: "12 yrs",
-  rating: 4.8,
-  status: "Active" as const,
-  joined: "Mar 2019",
-  patientsCount: 6,
-};
-
-type PatientStatus = "Stable" | "Under Observation" | "Critical" | "Discharged";
-
-type Patient = {
-  id: string;
-  name: string;
-  age: number;
-  gender: "Male" | "Female";
-  phone: string;
-  condition: string;
-  lastVisit: string;
-  status: PatientStatus;
-};
-
-const patients: Patient[] = [
-  { id: "p1", name: "Emily Carter", age: 54, gender: "Female", phone: "+1 (555) 902-1187", condition: "Hypertension", lastVisit: "Aug 09, 2026", status: "Stable" },
-  { id: "p2", name: "James Rodriguez", age: 61, gender: "Male", phone: "+1 (555) 483-6621", condition: "Arrhythmia", lastVisit: "Aug 12, 2026", status: "Under Observation" },
-  { id: "p3", name: "Aisha Khan", age: 47, gender: "Female", phone: "+1 (555) 774-3390", condition: "Coronary Artery Disease", lastVisit: "Jul 29, 2026", status: "Stable" },
-  { id: "p4", name: "Thomas Nguyen", age: 68, gender: "Male", phone: "+1 (555) 209-5541", condition: "Heart Failure", lastVisit: "Aug 13, 2026", status: "Critical" },
-  { id: "p5", name: "Maria Lopez", age: 39, gender: "Female", phone: "+1 (555) 668-4402", condition: "Post-Surgery Follow-up", lastVisit: "Jun 18, 2026", status: "Discharged" },
-  { id: "p6", name: "David Okafor", age: 57, gender: "Male", phone: "+1 (555) 335-9012", condition: "Hypertension", lastVisit: "Aug 05, 2026", status: "Stable" },
-];
-
-const STATUS_STYLES: Record<PatientStatus, string> = {
+const STATUS_STYLES: Record<string, string> = {
   Stable: "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200",
   "Under Observation": "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200",
   Critical: "bg-red-50 text-red-700 ring-1 ring-inset ring-red-200",
   Discharged: "bg-gray-100 text-gray-600 ring-1 ring-inset ring-gray-200",
 };
 
-// ---- Page --------------------------------------------------------------
-
 export default function Page() {
+  const { id } = useParams<{ id: string }>();
+  const dispatch = useAppDispatch();
   const [query, setQuery] = useState("");
+
+  const { doctor, patients, loading, error } = useAppSelector(
+    (state) => state.doctors.details
+  );
+
+  useEffect(() => {
+    if (id) dispatch(fetchDoctorDetails(id));
+  }, [id, dispatch]);
 
   const filteredPatients = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return patients;
     return patients.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.condition.toLowerCase().includes(q)
+      (p: any) =>
+        p.name?.toLowerCase().includes(q) ||
+        p.condition?.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, patients]);
 
-  const initials = doctor.name
-    .replace("Dr. ", "")
-    .split(" ")
-    .map((n) => n[0])
-    .join("");
+  const initials = doctor?.name
+    ? doctor.name
+        .replace("Dr. ", "")
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+    : "";
+
+  // ---- Loading state ----
+  if (loading && !doctor) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
+          <Loader2 size={18} className="animate-spin" />
+          Loading doctor details…
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Error state ----
+  if (error && !doctor) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-600">
+          <AlertTriangle size={22} />
+        </div>
+        <p className="text-sm font-medium text-gray-900">Couldn't load this doctor</p>
+        <p className="max-w-sm text-sm text-gray-500">{error}</p>
+        <button
+          type="button"
+          onClick={() => id && dispatch(fetchDoctorDetails(id))}
+          className="mt-1 rounded-lg border border-gray-200 px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  if (!doctor) return null;
 
   return (
-    <div className="min-h-screen ">
-      <div className="mx-auto ">
+    <div className="min-h-screen">
+      <div className="mx-auto">
         {/* Back link */}
         <Link
           href="/admin/doctors"
@@ -107,48 +121,57 @@ export default function Page() {
                   <h1 className="text-xl font-semibold text-gray-900">
                     {doctor.name}
                   </h1>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-200">
-                    <BadgeCheck size={12} />
-                    {doctor.status}
-                  </span>
+                  {(doctor as any).status && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-200">
+                      <BadgeCheck size={12} />
+                      {(doctor as any).status}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-0.5 flex items-center gap-1.5 text-sm text-gray-500">
                   <Stethoscope size={14} />
-                  {doctor.specialty} · {doctor.experience} experience
+                  {doctor.specialization}
+                  {(doctor as any).experience ? ` · ${(doctor as any).experience} experience` : ""}
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
-                  <span className="flex items-center gap-1.5">
-                    <Mail size={14} className="text-gray-400" />
-                    {doctor.email}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Phone size={14} className="text-gray-400" />
-                    {doctor.phone}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <MapPin size={14} className="text-gray-400" />
-                    {doctor.location}
-                  </span>
+                  {doctor.email && (
+                    <span className="flex items-center gap-1.5">
+                      <Mail size={14} className="text-gray-400" />
+                      {doctor.email}
+                    </span>
+                  )}
+                  {(doctor as any).phone && (
+                    <span className="flex items-center gap-1.5">
+                      <Phone size={14} className="text-gray-400" />
+                      {(doctor as any).phone}
+                    </span>
+                  )}
+                  {(doctor as any).location && (
+                    <span className="flex items-center gap-1.5">
+                      <MapPin size={14} className="text-gray-400" />
+                      {(doctor as any).location}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <button
-              type="button"
-              className="inline-flex h-9 items-center gap-2 self-start rounded-lg border border-gray-200 px-3.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <Pencil size={15} />
-              Edit profile
-            </button>
+ 
           </div>
 
           {/* Stats row */}
           <div className="mt-6 grid grid-cols-2 gap-3 border-t border-gray-100 pt-6 sm:grid-cols-4">
-            <Stat icon={Users} label="Assigned patients" value={String(doctor.patientsCount)} />
-            <Stat icon={Star} label="Rating" value={doctor.rating.toFixed(1)} />
-            <Stat icon={Calendar} label="Joined" value={doctor.joined} />
-            <Stat icon={Stethoscope} label="Experience" value={doctor.experience} />
+            <Stat icon={Users} label="Assigned patients" value={String(patients.length)} />
+            {(doctor as any).rating !== undefined && (
+              <Stat icon={Star} label="Rating" value={Number((doctor as any).rating).toFixed(1)} />
+            )}
+            {(doctor as any).joined && (
+              <Stat icon={Calendar} label="Joined" value={(doctor as any).joined} />
+            )}
+            {(doctor as any).experience && (
+              <Stat icon={Stethoscope} label="Experience" value={(doctor as any).experience} />
+            )}
           </div>
         </div>
 
@@ -193,30 +216,32 @@ export default function Page() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredPatients.map((p) => (
+                {filteredPatients.map((p: any) => (
                   <tr key={p.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600">
                           {p.name
-                            .split(" ")
-                            .map((n) => n[0])
+                            ?.split(" ")
+                            .map((n: string) => n[0])
                             .join("")}
                         </div>
                         <span className="font-medium text-gray-900">{p.name}</span>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-gray-600">
-                      {p.age} · {p.gender}
+                      {p.age ?? "—"} · {p.gender ?? "—"}
                     </td>
-                    <td className="px-5 py-3.5 text-gray-600">{p.phone}</td>
-                    <td className="px-5 py-3.5 text-gray-600">{p.condition}</td>
-                    <td className="px-5 py-3.5 text-gray-600">{p.lastVisit}</td>
+                    <td className="px-5 py-3.5 text-gray-600">{p.phone ?? "—"}</td>
+                    <td className="px-5 py-3.5 text-gray-600">{p.condition ?? "—"}</td>
+                    <td className="px-5 py-3.5 text-gray-600">{p.lastVisit ?? "—"}</td>
                     <td className="px-5 py-3.5">
                       <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[p.status]}`}
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                          STATUS_STYLES[p.status] ?? "bg-gray-100 text-gray-600 ring-1 ring-inset ring-gray-200"
+                        }`}
                       >
-                        {p.status}
+                        {p.status ?? "Unknown"}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
@@ -234,7 +259,9 @@ export default function Page() {
                 {filteredPatients.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-5 py-12 text-center text-sm text-gray-500">
-                      No patients match “{query}”.
+                      {patients.length === 0
+                        ? "No patients are assigned to this doctor yet."
+                        : `No patients match "${query}".`}
                     </td>
                   </tr>
                 )}
