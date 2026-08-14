@@ -25,7 +25,7 @@ export default function Header({ title = "Dashboard" }) {
  
 
         {/* Profile dropdown */}
-        <div className="relative">
+        <div className="relative border border-gray-200 rounded-lg">
           <button
             type="button"
             onClick={() => setProfileOpen((v) => !v)}
@@ -37,10 +37,10 @@ export default function Header({ title = "Dashboard" }) {
             <span className="hidden sm:block text-sm font-medium text-gray-700">
               {user?.fullName || "Admin"}
             </span>
-            <ChevronDown size={14} className="text-gray-400" />
+            {/* <ChevronDown size={14} className="text-gray-400" /> */}
           </button>
 
-          {profileOpen && (
+          {/* {profileOpen && (
             <>
               <div
                 className="fixed inset-0 z-[999]"
@@ -78,7 +78,7 @@ export default function Header({ title = "Dashboard" }) {
                 </button>
               </div>
             </>
-          )}
+          )} */}
         </div>
       </div>
     </header>
