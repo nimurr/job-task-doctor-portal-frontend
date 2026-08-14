@@ -1,0 +1,11 @@
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { api } from "../lib/api";
+import type { Doctor, PageResult } from "./types";
+type Params = { search?: string; page?: number; limit?: number };
+const query = (params: Params) => new URLSearchParams(Object.entries(params).filter(([, value]) => value !== undefined && value !== "") as [string, string][]).toString();
+const token = (state: any) => state.auth.accessToken as string | null;
+export const fetchDoctors = createAsyncThunk("doctors/fetch", async (params: Params, { getState }) => api<PageResult<Doctor>>(`/doctors?${query(params)}`, { token: token(getState()) }));
+export const saveDoctor = createAsyncThunk("doctors/save", async ({ id, data }: { id?: string; data: Partial<Doctor> }, { getState }) => api<Doctor>(id ? `/doctors/${id}` : "/doctors", { method: id ? "PATCH" : "POST", body: data, token: token(getState()) }));
+export const removeDoctor = createAsyncThunk("doctors/remove", async (id: string, { getState }) => { await api(`/doctors/${id}`, { method: "DELETE", token: token(getState()) }); return id; });
+const slice = createSlice({ name: "doctors", initialState: { data: [] as Doctor[], meta: { page: 1, limit: 10, totalPages: 1, totalResults: 0 }, loading: false, saving: false, error: null as string | null }, reducers: {}, extraReducers: (builder) => builder.addCase(fetchDoctors.pending, (s) => { s.loading = true; s.error = null; }).addCase(fetchDoctors.fulfilled, (s, a) => { s.loading = false; s.data = a.payload.results; s.meta = a.payload; }).addCase(fetchDoctors.rejected, (s, a) => { s.loading = false; s.error = a.error.message || "Unable to load doctors"; }).addCase(saveDoctor.pending, (s) => { s.saving = true; }).addCase(saveDoctor.fulfilled, (s) => { s.saving = false; }).addCase(saveDoctor.rejected, (s, a) => { s.saving = false; s.error = a.error.message || "Unable to save doctor"; }).addCase(removeDoctor.fulfilled, (s, a) => { s.data = s.data.filter((d) => d.id !== a.payload); }) });
+export default slice.reducer;
