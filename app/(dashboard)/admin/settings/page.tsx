@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { fetchProfile, updateProfile, changePassword } from "../../store/userSlice";
 import {
   User,
   Lock,
@@ -16,6 +14,8 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { changePassword, fetchProfile, updateProfile } from "@/app/store/userSlice";
 
 export default function SettingsPage() {
   const dispatch = useAppDispatch();

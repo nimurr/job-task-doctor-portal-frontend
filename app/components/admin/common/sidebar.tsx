@@ -57,18 +57,18 @@ export default function Sidebar() {
       <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
           const isActive =
-            pathname === href ||
-            (href !== "/dashboard" && pathname?.startsWith(href));
+            href === "/admin"
+              ? pathname === href
+              : pathname === href || pathname?.startsWith(href + "/");
 
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 h-10 px-3 rounded-lg text-sm font-medium transition-colors ${
-                isActive
+              className={`flex items-center gap-3 h-10 px-3 rounded-lg text-sm font-medium transition-colors ${isActive
                   ? "bg-primary/10 text-primary"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
+                }`}
             >
               <Icon size={18} strokeWidth={isActive ? 2.25 : 2} />
               {label}
