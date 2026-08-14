@@ -91,7 +91,7 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={handleLogoutClick}
-          className="w-full mt-1 flex items-center gap-3 h-10 px-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors"
+          className="w-full mt-1 flex cursor-pointer items-center gap-3 h-10 px-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors"
         >
           <LogOut size={18} />
           Log out

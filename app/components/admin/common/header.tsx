@@ -14,7 +14,7 @@ export default function Header({ title = "Dashboard" }) {
   const signOut = () => { dispatch(logout()); router.replace("/auth/login"); };
 
   return (
-    <header className="h-16 sticky top-0  shrink-0 flex items-center justify-between gap-4 px-6 bg-white border-b border-gray-200 z-20">
+    <header className="h-16 sticky top-0  shrink-0 flex items-center justify-between gap-4 px-6 bg-white  z-20">
       {/* Page title */}
       <h1 className="text-lg font-semibold text-gray-900 whitespace-nowrap">
         {title}
