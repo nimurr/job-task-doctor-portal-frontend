@@ -17,7 +17,7 @@ export default function LoginPage() {
   const { accessToken, error: apiError } = useAppSelector((state) => state.auth);
   useEffect(() => { if (accessToken) router.replace("/admin"); }, [accessToken, router]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e : any) => {
     e.preventDefault();
     setError("");
 
