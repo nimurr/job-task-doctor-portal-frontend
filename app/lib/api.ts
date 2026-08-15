@@ -1,4 +1,4 @@
-const API_BASE_URL =  "https://job-task-doctor-portal-backend-rho.vercel.app//api/v1";
+const API_BASE_URL =  "https://job-task-doctor-portal-backend-rho.vercel.app/api/v1";
 
 export class ApiError extends Error {
   constructor(message: string, public status: number) { super(message); }
