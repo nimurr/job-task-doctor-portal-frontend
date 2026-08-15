@@ -9,7 +9,7 @@ import { login } from "@/app/store/authSlice";
 
 const adminData = {
   email: "admin@gmail.com",
-  password: "admin123",
+  password: "1qazxsw2",
 };
 
 export default function LoginPage() {
