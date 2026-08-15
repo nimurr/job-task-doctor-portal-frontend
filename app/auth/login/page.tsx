@@ -6,6 +6,12 @@ import { Eye, EyeOff, Stethoscope } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { login } from "@/app/store/authSlice";
 
+
+const adminData = {
+  email: "admin@gmail.com",
+  password: "admin123",
+};
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +23,13 @@ export default function LoginPage() {
   const { accessToken, error: apiError } = useAppSelector((state) => state.auth);
   useEffect(() => { if (accessToken) router.replace("/admin"); }, [accessToken, router]);
 
-  const handleSubmit = async (e : any) => {
+  useEffect(() => {
+    setEmail(adminData.email);
+    setPassword(adminData.password);
+  }, []);
+
+
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setError("");
 
