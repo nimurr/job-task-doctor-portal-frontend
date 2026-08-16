@@ -110,6 +110,9 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <p className="text-sm">Please use this credentials to sign in admin : <br />
+              <span className="text-primary">Email : {adminData.email} <br /> Password : {adminData.password}</span></p>
+
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm text-gray-600">
                 <input
